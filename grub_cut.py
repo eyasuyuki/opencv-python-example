@@ -85,6 +85,13 @@ img = image * mask2[:, :, np.newaxis]
 
 cv2.imwrite("img.jpg", img) # debug
 
-plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-plt.show()
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+cv2.imwrite("blurred.jpg", blurred)
 
+# threshold the wrapped image
+thresh = cv2.threshold(blurred, 0, 255,
+                       cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (1, 5))
+thresh = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+cv2.imwrite("thresh.jpg", thresh)
