@@ -30,15 +30,15 @@ cv2.imwrite("blurred.jpg", blurred)
 
 # canny
 
-edged = cv2.Canny(blurred, 20, 70, 255)
+edged = cv2.Canny(blurred, 20, 80, 255)
 cv2.imwrite("edged.jpg", edged)
 
 # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
 
-dilate = cv2.dilate(edged, None, iterations=8)
+dilate = cv2.dilate(edged, None, iterations=16)
 cv2.imwrite("dilate.jpg", dilate)
 
-erode = cv2.erode(dilate, None, iterations=8)
+erode = cv2.erode(dilate, None, iterations=16)
 cv2.imwrite("erode.jpg", erode)
 
 mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
@@ -65,5 +65,9 @@ cv2.imwrite("newimage2.jpg", newimage)
 ret,newimage = cv2.threshold(newimage,0,255,cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 cv2.imwrite("newimage3.jpg", newimage)
 
+# find contours 
 
+cnts2 = cv2.findContours(newimage.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+contoured2 = cv2.drawContours(image.copy(), cnts, -1, (0, 255, 0), 3)
+cv2.imwrite("contoured2.jpg", contoured2)
 
