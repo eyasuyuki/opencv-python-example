@@ -25,12 +25,12 @@ image = cv2.imread("example.jpg")
 image = imutils.resize(image, height=500)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-blurred = cv2.blur(gray, (5, 5))
+blurred = cv2.GaussianBlur(gray, (5, 5), 10, 10)
 cv2.imwrite("blurred.jpg", blurred)
 
 # canny
 
-edged = cv2.Canny(blurred, 20, 60, 255)
+edged = cv2.Canny(blurred, 20, 70, 255)
 cv2.imwrite("edged.jpg", edged)
 
 # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
@@ -46,10 +46,12 @@ mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
 # find contuors
 
 cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+contoured = cv2.drawContours(image.copy(), cnts, -1, (0, 255, 0), 3)
+cv2.imwrite("contoured.jpg", contoured)
 
 orig = image.copy()
 for c in cnts:
-    if cv2.contourArea(c) < 800:
+    if cv2.contourArea(c) < 600:
         cv2.drawContours(mask2, [c], -1, 0, -1)
         continue
 
