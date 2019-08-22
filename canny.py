@@ -30,24 +30,34 @@ cv2.imwrite("blurred.jpg", blurred)
 
 # canny
 
-edged = cv2.Canny(blurred, 20, 80, 255)
+edged = cv2.Canny(blurred, 20, 60, 255)
 cv2.imwrite("edged.jpg", edged)
 
 # find contors
 
 cnts0 = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+
+# filter noize
+thCnts = []
 for c in cnts0:
-        (x, y, w, h) = cv2.boundingRect(c)
-        print(f"{x}, {y}, {w}, {h}")
-edged_cnts = cv2.drawContours(image.copy(), cnts0, -1, (0, 255, 0), 3)
+        (x, y, z, w) = cv2.boundingRect(c)
+        a = cv2.contourArea(c)
+        print(f"{x}, {y}, {z}, {w}, {a}")
+        if (a >= 20):
+                thCnts.append(c)
+
+background = np.zeros_like(image, np.uint8)
+
+edged_cnts = cv2.drawContours(background, thCnts, -1, (255, 255, 255), 1)
+edged_cnts = cv2.cvtColor(edged_cnts, cv2.COLOR_BGR2GRAY);
 cv2.imwrite("edged_cnts.jpg", edged_cnts)
 
 # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
 
-dilate = cv2.dilate(edged, None, iterations=8)
+dilate = cv2.dilate(edged_cnts, None, iterations=16)
 cv2.imwrite("dilate.jpg", dilate)
 
-erode = cv2.erode(dilate, None, iterations=8)
+erode = cv2.erode(dilate, None, iterations=16)
 cv2.imwrite("erode.jpg", erode)
 
 mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
@@ -60,9 +70,11 @@ cv2.imwrite("contoured.jpg", contoured)
 
 orig = image.copy()
 for c in cnts:
-    if cv2.contourArea(c) < 600:
-        cv2.drawContours(mask2, [c], -1, 0, -1)
-        continue
+        (x, y, w, h) = cv2.boundingRect(c)
+        print(f"{x}, {y}, {w}, {h}")
+        if cv2.contourArea(c) < 900:
+                cv2.drawContours(mask2, [c], -1, 0, -1)
+                continue
 
 newimage = cv2.bitwise_and(erode.copy(), dilate.copy(), mask=mask2)
 cv2.imwrite("newimage1.jpg", newimage)
@@ -78,12 +90,12 @@ cnts2 = cv2.findContours(newimage.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SI
 cnts2 = imutils.grab_contours(cnts2)
 digitCnts = []
 
-""" for c in cnts2:
+for c in cnts2:
     (x, y, w, h) = cv2.boundingRect(c)
     print(f"{x}, {y}, {w}, {h}")
-    if w >= 40 and (h >= 70 and h <= 140):
+    if (w >= 20 and w <= 200) and h >= 70:
         digitCnts.append(c)
- """
-#digits = cv2.drawContours(image.copy(), digitCnts, -1, (0, 255, 0), 3)
-digits = cv2.drawContours(image.copy(), cnts2, -1, (0, 255, 0), 3)
+
+digits = cv2.drawContours(image.copy(), digitCnts, -1, (0, 255, 0), 3)
+#digits = cv2.drawContours(image.copy(), cnts2, -1, (0, 255, 0), 3)
 cv2.imwrite("digits.jpg", digits)
