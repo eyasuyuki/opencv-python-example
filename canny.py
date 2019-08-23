@@ -60,9 +60,17 @@ cv2.imwrite("dilate.jpg", dilate)
 erode = cv2.erode(dilate, None, iterations=16)
 cv2.imwrite("erode.jpg", erode)
 
-mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
+# another dilate/erode
+
+d2 = cv2.dilate(edged, None, iterations=16)
+cv2.imwrite("d2.jpg", d2)
+
+e2 = cv2.erode(d2, None, iterations=16)
+cv2.imwrite("e2.jpg", e2)
 
 # find contuors
+
+mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
 
 cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
 contoured = cv2.drawContours(image.copy(), cnts, -1, (0, 255, 0), 3)
@@ -79,8 +87,8 @@ for c in cnts:
 newimage = cv2.bitwise_and(erode.copy(), dilate.copy(), mask=mask2)
 cv2.imwrite("newimage1.jpg", newimage)
 
-newimage = cv2.dilate(newimage,None, iterations=7)
-newimage = cv2.erode(newimage,None, iterations=5)
+newimage = cv2.dilate(newimage,None, iterations=16)
+newimage = cv2.erode(newimage,None, iterations=16)
 cv2.imwrite("newimage2.jpg", newimage)
 
 """ ret,newimage = cv2.threshold(newimage,0,255,cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
@@ -90,12 +98,12 @@ cnts2 = cv2.findContours(newimage.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SI
 cnts2 = imutils.grab_contours(cnts2)
 digitCnts = []
 
-for c in cnts2:
+""" for c in cnts2:
     (x, y, w, h) = cv2.boundingRect(c)
     print(f"{x}, {y}, {w}, {h}")
     if (w >= 20 and w <= 200) and h >= 70:
         digitCnts.append(c)
-
-digits = cv2.drawContours(image.copy(), digitCnts, -1, (0, 255, 0), 3)
-#digits = cv2.drawContours(image.copy(), cnts2, -1, (0, 255, 0), 3)
+ """
+#digits = cv2.drawContours(image.copy(), digitCnts, -1, (0, 255, 0), 3)
+digits = cv2.drawContours(image.copy(), cnts2, -1, (0, 255, 0), 3)
 cv2.imwrite("digits.jpg", digits)
