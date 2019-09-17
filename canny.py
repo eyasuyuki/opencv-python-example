@@ -21,7 +21,7 @@ DIGITS_LOOKUP = DIGITS_LOOKUP = {
 # load image
 image = cv2.imread("example.jpg")
 
-# pre-process
+# gray
 image = imutils.resize(image, height=500)
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -59,15 +59,16 @@ cv2.imwrite("edged.jpg", edged)
 
 # find contors
 
-cnts0 = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+cnts0 = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
 
 # filter noize
-""" thCnts = []
+
+thCnts = []
 for c in cnts0:
         (x, y, z, w) = cv2.boundingRect(c)
         a = cv2.contourArea(c)
-#        print(f"{x}, {y}, {z}, {w}, {a}")
-        if (a >= 10):
+        print(f"{x}, {y}, {z}, {w}, {a}")
+        if (a >= 5):
                 thCnts.append(c)
 
 background = np.zeros_like(image, np.uint8)
@@ -75,7 +76,7 @@ background = np.zeros_like(image, np.uint8)
 edged_cnts = cv2.drawContours(background, thCnts, -1, (255, 255, 255), 1)
 edged_cnts = cv2.cvtColor(edged_cnts, cv2.COLOR_BGR2GRAY);
 cv2.imwrite("edged_cnts.jpg", edged_cnts)
- """
+
 # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
 
 dilate = cv2.dilate(edged, None, iterations=16)
