@@ -18,39 +18,64 @@ DIGITS_LOOKUP = DIGITS_LOOKUP = {
     (1, 1, 1, 1, 0, 1, 1): 9
 }
 
+def gray(img):
+        cv2.imwrite("test.jpg", img)
+        grayed = cv2.cvtColor(img, cv2.COLOR_BAYER_BG2BGR)
+        cv2.imwrite("grayed.jpg", grayed)
+        return grayed
+
+def blurr(img):
+        blurred = cv2.GaussianBlur(img, (9, 9), 10, 10)
+        cv2.imwrite("blurred.jpg", blurred)
+        return blurred
+
+def lut(img, min_table, max_table):
+        diff_table = max_table - min_table
+        lookup_table = np.arange(256, dtype="uint8")
+
+        for i in range(0, len(lookup_table)):
+                if (i < min_table):
+                        lookup_table[i] = 0
+                elif (i >= min_table and i <= max_table):
+                        n = 255 * (i - min_table) / diff_table
+                        #print(f"{i}, {n}")
+                        lookup_table[i] = n
+                elif (i > max_table):
+                        lookup_table[i] = 255
+
+        contrast = cv2.LUT(img.copy(), lookup_table)
+        cv2.imwrite("contrast.jpg", contrast)
+        return contrast
+
 # load image
 image = cv2.imread("example.jpg")
 
+# resize
+
+# image = imutils.resize(image, height=500)
+
 # gray
-image = imutils.resize(image, height=500)
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+grayed = gray(image)
 
 # blur
 
-blurred = cv2.GaussianBlur(gray, (9, 9), 10, 10)
-cv2.imwrite("blurred.jpg", blurred)
+blurred = blurr(grayed)
 
 # lut
 
-# min_table = 45
-# max_table = 210
-min_table = 60
-max_table = 195
-diff_table = max_table - min_table
-lookup_table = np.arange(256, dtype="uint8")
+contirast = lut(blurred, 60, 195)
 
-for i in range(0, len(lookup_table)):
-        if (i < min_table):
-                lookup_table[i] = 0
-        elif (i >= min_table and i <= max_table):
-                n = 255 * (i - min_table) / diff_table
-                #print(f"{i}, {n}")
-                lookup_table[i] = n
-        elif (i > max_table):
-                lookup_table[i] = 255
+# adaptive threshold
 
-contrast = cv2.LUT(blurred.copy(), lookup_table)
-cv2.imwrite("contrast.jpg", contrast)
+ret,th1 = cv2.threshold(contrast,127,255,cv2.THRESH_BINARY)
+th2 = cv2.adaptiveThreshold(contrast,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
+th3 = cv2.adaptiveThreshold(contrast,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+ret2,th4 = cv2.threshold(contrast,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+cv2.imwrite("th1.jpg", th1)
+cv2.imwrite("th2.jpg", th2)
+cv2.imwrite("th3.jpg", th3)
+cv2.imwrite("th4.jpg", th4)
 
 # canny
 
