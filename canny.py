@@ -24,7 +24,7 @@ def gray(img):
         cv2.imwrite("grayed.jpg", grayed)
         return grayed
 
-def blurr(img):
+def blur(img):
         blurred = cv2.GaussianBlur(img, (9, 9), 10, 10)
         cv2.imwrite("blurred.jpg", blurred)
         return blurred
@@ -52,7 +52,7 @@ def canny(img):
         cv2.imwrite("edged.jpg", edged)
         return edged
 
-def filterNoise(img):
+def filter_noise(img):
         # find contors
 
         cnts0 = cv2.findContours(img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
@@ -64,23 +64,23 @@ def filterNoise(img):
                 (x, y, z, w) = cv2.boundingRect(c)
                 a = cv2.contourArea(c)
                 print(f"{x}, {y}, {z}, {w}, {a}")
-                if (a >= 5):
+                if (a >= 10):
                         thCnts.append(c)
 
-        background = np.zeros_like(image, np.uint8)
+        background = np.zeros_like(img, np.uint8)
 
         edged_cnts = cv2.drawContours(background, thCnts, -1, (255, 255, 255), 1)
         edged_cnts = cv2.cvtColor(edged_cnts, cv2.COLOR_BGR2GRAY);
         cv2.imwrite("edged_cnts.jpg", edged_cnts)
         return edged_cnts
 
-def open(img):
+def closing(img):
         # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
 
-        dilate = cv2.dilate(edged, None, iterations=8)
+        dilate = cv2.dilate(edged, None, iterations=6)
         cv2.imwrite("dilate.jpg", dilate)
 
-        erode = cv2.erode(dilate, None, iterations=8)
+        erode = cv2.erode(dilate, None, iterations=6)
         cv2.imwrite("erode.jpg", erode)
 
         return dilate, erode
@@ -99,10 +99,10 @@ def morph(img):
         cv2.imwrite("foreground.jpg", foreground)
         return foreground
 
-def denoizing(img):
-        denoized = cv2.fastNlMeansDenoising(img, 10, 10, 7, 21)
-        cv2.imwrite("denoized.jpg", denoized)
-        return denoized
+def denoise(img):
+        denoised = cv2.fastNlMeansDenoising(img, 10, 10, 7, 21)
+        cv2.imwrite("denoized.jpg", denoised)
+        return denoised
 
 # load image
 image = cv2.imread("example.jpg")
@@ -116,7 +116,7 @@ grayed = gray(image)
 
 # denoizing
 
-denoized = denoizing(grayed) # TEST
+denoized = denoise(grayed) # TEST
 
 # lut
 
@@ -136,11 +136,11 @@ edged = canny(contrast)
 
 # filter noize
 
-edged_cnts = filterNoise(edged)
+edged_cnts = filter_noise(edged)
 
 # open
 
-dilate, erode = open(edged_cnts)
+dilate, erode = closing(edged_cnts)
 
 # find contuors
 
