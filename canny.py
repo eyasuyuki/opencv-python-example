@@ -47,6 +47,44 @@ def lut(img, min_table, max_table):
         cv2.imwrite("contrast.jpg", contrast)
         return contrast
 
+def canny(img):
+        edged = cv2.Canny(img, 20, 80, 255)
+        cv2.imwrite("edged.jpg", edged)
+        return edged
+
+def filterNoise(img):
+        # find contors
+
+        cnts0 = cv2.findContours(img.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+
+        # filter noize
+
+        thCnts = []
+        for c in cnts0:
+                (x, y, z, w) = cv2.boundingRect(c)
+                a = cv2.contourArea(c)
+                print(f"{x}, {y}, {z}, {w}, {a}")
+                if (a >= 5):
+                        thCnts.append(c)
+
+        background = np.zeros_like(image, np.uint8)
+
+        edged_cnts = cv2.drawContours(background, thCnts, -1, (255, 255, 255), 1)
+        edged_cnts = cv2.cvtColor(edged_cnts, cv2.COLOR_BGR2GRAY);
+        cv2.imwrite("edged_cnts.jpg", edged_cnts)
+        return edged_cnts
+
+def open(img):
+        # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
+
+        dilate = cv2.dilate(edged, None, iterations=16)
+        cv2.imwrite("dilate.jpg", dilate)
+
+        erode = cv2.erode(dilate, None, iterations=16)
+        cv2.imwrite("erode.jpg", erode)
+
+        return dilate, erode
+
 # load image
 image = cv2.imread("example.jpg")
 
@@ -79,44 +117,15 @@ cv2.imwrite("th4.jpg", th4)
 
 # canny
 
-edged = cv2.Canny(contrast, 20, 80, 255)
-cv2.imwrite("edged.jpg", edged)
-
-# find contors
-
-cnts0 = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)[0]
+edged = canny(contrast)
 
 # filter noize
 
-thCnts = []
-for c in cnts0:
-        (x, y, z, w) = cv2.boundingRect(c)
-        a = cv2.contourArea(c)
-        print(f"{x}, {y}, {z}, {w}, {a}")
-        if (a >= 5):
-                thCnts.append(c)
+edged_cnts = filterNoise(edged)
 
-background = np.zeros_like(image, np.uint8)
+# open
 
-edged_cnts = cv2.drawContours(background, thCnts, -1, (255, 255, 255), 1)
-edged_cnts = cv2.cvtColor(edged_cnts, cv2.COLOR_BGR2GRAY);
-cv2.imwrite("edged_cnts.jpg", edged_cnts)
-
-# https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
-
-dilate = cv2.dilate(edged, None, iterations=16)
-cv2.imwrite("dilate.jpg", dilate)
-
-erode = cv2.erode(dilate, None, iterations=16)
-cv2.imwrite("erode.jpg", erode)
-
-# another dilate/erode
-
-d2 = cv2.dilate(edged, None, iterations=16)
-cv2.imwrite("d2.jpg", d2)
-
-e2 = cv2.erode(d2, None, iterations=16)
-cv2.imwrite("e2.jpg", e2)
+dilate, erode = open(edged)
 
 # find contuors
 
