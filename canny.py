@@ -19,7 +19,6 @@ DIGITS_LOOKUP = DIGITS_LOOKUP = {
 }
 
 def gray(img):
-        cv2.imwrite("test.jpg", img)
         grayed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         cv2.imwrite("grayed.jpg", grayed)
         return grayed
@@ -70,7 +69,6 @@ def filter_noise(img):
         background = np.zeros_like(img, np.uint8)
 
         edged_cnts = cv2.drawContours(background, thCnts, -1, (255, 255, 255), 1)
-        edged_cnts = cv2.cvtColor(edged_cnts, cv2.COLOR_BGR2GRAY);
         cv2.imwrite("edged_cnts.jpg", edged_cnts)
         return edged_cnts
 
