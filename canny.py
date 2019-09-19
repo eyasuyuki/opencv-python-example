@@ -77,13 +77,32 @@ def filterNoise(img):
 def open(img):
         # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
 
-        dilate = cv2.dilate(edged, None, iterations=16)
+        dilate = cv2.dilate(edged, None, iterations=8)
         cv2.imwrite("dilate.jpg", dilate)
 
-        erode = cv2.erode(dilate, None, iterations=16)
+        erode = cv2.erode(dilate, None, iterations=8)
         cv2.imwrite("erode.jpg", erode)
 
         return dilate, erode
+
+def threshold(img):
+        th = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
+        cv2.imwrite("th.jpg", th)
+        return th
+
+def morph(img):
+        element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3),)
+        background = cv2.morphologyEx(img, cv2.MORPH_OPEN, element)
+        cv2.imwrite("background.jpg", background)
+
+        foreground = cv2.absdiff(img, background)
+        cv2.imwrite("foreground.jpg", foreground)
+        return foreground
+
+def denoizing(img):
+        denoized = cv2.fastNlMeansDenoising(img, 10, 10, 7, 21)
+        cv2.imwrite("denoized.jpg", denoized)
+        return denoized
 
 # load image
 image = cv2.imread("example.jpg")
@@ -95,25 +114,21 @@ image = cv2.imread("example.jpg")
 # gray
 grayed = gray(image)
 
-# blur
+# denoizing
 
-blurred = blurr(grayed)
+denoized = denoizing(grayed) # TEST
 
 # lut
 
-contrast = lut(blurred, 60, 195)
+contrast = lut(denoized, 60, 195)
 
 # adaptive threshold
 
-ret,th1 = cv2.threshold(contrast,127,255,cv2.THRESH_BINARY)
-th2 = cv2.adaptiveThreshold(contrast,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY,11,2)
-th3 = cv2.adaptiveThreshold(contrast,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
-ret2,th4 = cv2.threshold(contrast,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+# th = threshold(contrast)
 
-cv2.imwrite("th1.jpg", th1)
-cv2.imwrite("th2.jpg", th2)
-cv2.imwrite("th3.jpg", th3)
-cv2.imwrite("th4.jpg", th4)
+# remove small object
+
+# morphed = morph(th)
 
 # canny
 
@@ -125,7 +140,7 @@ edged_cnts = filterNoise(edged)
 
 # open
 
-dilate, erode = open(edged)
+dilate, erode = open(edged_cnts)
 
 # find contuors
 
