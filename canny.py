@@ -20,7 +20,7 @@ DIGITS_LOOKUP = DIGITS_LOOKUP = {
 
 def gray(img):
         cv2.imwrite("test.jpg", img)
-        grayed = cv2.cvtColor(img, cv2.COLOR_BAYER_BG2BGR)
+        grayed = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         cv2.imwrite("grayed.jpg", grayed)
         return grayed
 
@@ -63,7 +63,7 @@ blurred = blurr(grayed)
 
 # lut
 
-contirast = lut(blurred, 60, 195)
+contrast = lut(blurred, 60, 195)
 
 # adaptive threshold
 
