@@ -84,8 +84,10 @@ def closing(img):
         return dilate, erode
 
 def threshold(img):
-        th = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
+        th = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+        th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
         cv2.imwrite("th.jpg", th)
+        cv2.imwrite("th2.jpg", th2)
         return th
 
 def morph(img):
