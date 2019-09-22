@@ -62,7 +62,7 @@ def filter_noise(img):
         for c in cnts0:
                 (x, y, z, w) = cv2.boundingRect(c)
                 a = cv2.contourArea(c)
-                print(f"{x}, {y}, {z}, {w}, {a}")
+                # print(f"{x}, {y}, {z}, {w}, {a}")
                 if (a >= 10):
                         thCnts.append(c)
 
@@ -75,10 +75,10 @@ def filter_noise(img):
 def closing(img):
         # https://github.com/DevashishPrasad/LCD-OCR/blob/master/code.py
 
-        dilate = cv2.dilate(edged, None, iterations=6)
+        dilate = cv2.dilate(edged, None, iterations=4)
         cv2.imwrite("dilate.jpg", dilate)
 
-        erode = cv2.erode(dilate, None, iterations=6)
+        erode = cv2.erode(dilate, None, iterations=4)
         cv2.imwrite("erode.jpg", erode)
 
         return dilate, erode
@@ -88,7 +88,7 @@ def threshold(img):
         th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
         cv2.imwrite("th.jpg", th)
         cv2.imwrite("th2.jpg", th2)
-        return th
+        return th2
 
 def morph(img):
         element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3),)
@@ -153,10 +153,10 @@ cv2.imwrite("contoured.jpg", contoured)
 orig = image.copy()
 for c in cnts:
         (x, y, w, h) = cv2.boundingRect(c)
-        #print(f"{x}, {y}, {w}, {h}")
-        if cv2.contourArea(c) < 900:
-                cv2.drawContours(mask2, [c], -1, 0, -1)
-                continue
+        print(f"{x}, {y}, {w}, {h}")
+        orig = cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+cv2.imwrite("orig.jpg", orig)
 
 newimage = cv2.bitwise_and(erode.copy(), dilate.copy(), mask=mask2)
 cv2.imwrite("newimage1.jpg", newimage)
