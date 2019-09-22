@@ -101,7 +101,7 @@ def morph(img):
 
 def denoise(img):
         denoised = cv2.fastNlMeansDenoising(img, 10, 10, 7, 21)
-        cv2.imwrite("denoized.jpg", denoised)
+        cv2.imwrite("denoised.jpg", denoised)
         return denoised
 
 # load image
