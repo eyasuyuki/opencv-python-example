@@ -23,10 +23,10 @@ def gray(img):
         cv2.imwrite("grayed.jpg", grayed)
         return grayed
 
-def blur(img):
-        blurred = cv2.GaussianBlur(img, (9, 9), 10, 10)
-        cv2.imwrite("blurred.jpg", blurred)
-        return blurred
+def denoise(img):
+        denoised = cv2.fastNlMeansDenoising(img, 10, 10, 7, 21)
+        cv2.imwrite("denoised.jpg", denoised)
+        return denoised
 
 def lut(img, min_table, max_table):
         diff_table = max_table - min_table
@@ -83,27 +83,6 @@ def closing(img):
 
         return dilate, erode
 
-def threshold(img):
-        th = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-        th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        cv2.imwrite("th.jpg", th)
-        cv2.imwrite("th2.jpg", th2)
-        return th2
-
-def morph(img):
-        element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3),)
-        background = cv2.morphologyEx(img, cv2.MORPH_OPEN, element)
-        cv2.imwrite("background.jpg", background)
-
-        foreground = cv2.absdiff(img, background)
-        cv2.imwrite("foreground.jpg", foreground)
-        return foreground
-
-def denoise(img):
-        denoised = cv2.fastNlMeansDenoising(img, 10, 10, 7, 21)
-        cv2.imwrite("denoised.jpg", denoised)
-        return denoised
-
 # load image
 image = cv2.imread("example.jpg")
 
@@ -122,14 +101,6 @@ denoized = denoise(grayed) # TEST
 
 contrast = lut(denoized, 60, 195)
 
-# adaptive threshold
-
-# th = threshold(contrast)
-
-# remove small object
-
-# morphed = morph(th)
-
 # canny
 
 edged = canny(contrast)
@@ -144,40 +115,17 @@ dilate, erode = closing(edged_cnts)
 
 # find contuors
 
-mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
+# mask2 = np.ones(image.shape[:2], dtype="uint8") * 255
 
 cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-contoured = cv2.drawContours(image.copy(), cnts, -1, (0, 255, 0), 3)
-cv2.imwrite("contoured.jpg", contoured)
+
+# sort contours
+
+sorted_cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
 orig = image.copy()
-for c in cnts:
+for c in sorted_cnts:
         (x, y, w, h) = cv2.boundingRect(c)
         print(f"{x}, {y}, {w}, {h}")
         orig = cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-cv2.imwrite("orig.jpg", orig)
-
-newimage = cv2.bitwise_and(erode.copy(), dilate.copy(), mask=mask2)
-cv2.imwrite("newimage1.jpg", newimage)
-
-newimage = cv2.dilate(newimage,None, iterations=16)
-newimage = cv2.erode(newimage,None, iterations=16)
-cv2.imwrite("newimage2.jpg", newimage)
-
-""" ret,newimage = cv2.threshold(newimage,0,255,cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
-cv2.imwrite("newimage3.jpg", newimage)
- """
-cnts2 = cv2.findContours(newimage.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-cnts2 = imutils.grab_contours(cnts2)
-digitCnts = []
-
-""" for c in cnts2:
-    (x, y, w, h) = cv2.boundingRect(c)
-    print(f"{x}, {y}, {w}, {h}")
-    if (w >= 20 and w <= 200) and h >= 70:
-        digitCnts.append(c)
- """
-#digits = cv2.drawContours(image.copy(), digitCnts, -1, (0, 255, 0), 3)
-digits = cv2.drawContours(image.copy(), cnts2, -1, (0, 255, 0), 3)
-cv2.imwrite("digits.jpg", digits)
