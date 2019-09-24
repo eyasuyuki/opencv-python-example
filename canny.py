@@ -85,10 +85,8 @@ def closing(img):
 
 def adaptive_threshold(img):
         ret, th = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        now = datetime.utcnow()
-        cv2.imwrite(now.strftime('th.jpg'), th4)
+        cv2.imwrite(datetime.utcnow().strftime('th-%Y%m%d%H%M%S_%f.jpg'), th)
         # TODO recognize
-
 
 # load image
 image = cv2.imread("example.jpg")
@@ -131,11 +129,9 @@ cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
 sorted_cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
 orig = contrast.copy()
-for c in sorted_cnts:
+for c in cnts:
         (x, y, w, h) = cv2.boundingRect(c)
         roi = orig[y:y + h, x:x + w]
         adaptive_threshold(roi)
         print(f"{x}, {y}, {w}, {h}")
         orig = cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-
