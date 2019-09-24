@@ -1,9 +1,9 @@
-from imutils.perspective import four_point_transform
+import datetime
+
 from imutils import contours
-import imutils
 import cv2
-from matplotlib import pyplot as plt
 import numpy as np
+from datetime import datetime
 
 DIGITS_LOOKUP = DIGITS_LOOKUP = {
     (1, 1, 1, 0, 1, 1, 1): 0,
@@ -83,6 +83,13 @@ def closing(img):
 
         return dilate, erode
 
+def adaptive_threshold(img):
+        ret, th = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        now = datetime.utcnow()
+        cv2.imwrite(now.strftime('th.jpg'), th4)
+        # TODO recognize
+
+
 # load image
 image = cv2.imread("example.jpg")
 
@@ -95,7 +102,7 @@ grayed = gray(image)
 
 # denoizing
 
-denoized = denoise(grayed) # TEST
+denoized = denoise(grayed)
 
 # lut
 
@@ -123,9 +130,12 @@ cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
 
 sorted_cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
-orig = image.copy()
+orig = contrast.copy()
 for c in sorted_cnts:
         (x, y, w, h) = cv2.boundingRect(c)
+        roi = orig[y:y + h, x:x + w]
+        adaptive_threshold(roi)
         print(f"{x}, {y}, {w}, {h}")
         orig = cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
 
