@@ -129,17 +129,14 @@ cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
 
 sorted_cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
-
-orig = image.copy()
+textbox = image.copy()
 (fx, fy, fw, fh) = cv2.boundingRect(sorted_cnts[0])
 for c in sorted_cnts:
         (x, y, w, h) = cv2.boundingRect(c)
-        if (x == fx and y == fy):
-                continue
         rad = math.atan2(x - fx, y - fy)
-        roi = orig[y:y + h, x:x + w] # clip numeric segment
+        roi = contrast[y:y + h, x:x + w] # clip numeric segment
         adaptive_threshold(roi) # extract text segment
         print(f"{x}, {y}, {w}, {h}, {rad}")
-        orig = cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        textbox = cv2.rectangle(textbox, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-cv2.imwrite("orig.jpg", orig)
+cv2.imwrite("textbox.jpg", textbox)
