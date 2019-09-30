@@ -141,7 +141,7 @@ sorted_cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 pairs = itertools.combinations(sorted_cnts, 2)
 
 # word group
-words = [[]]
+words = []
 for p in pairs:
     p0 = p[0]
     p1 = p[1]
@@ -161,6 +161,10 @@ for p in pairs:
                     w = w.append(p1)
                 elif p1 in w and p0 not in w:
                     w = w.append(p0)
+
+print(len(words))
+
+# print words
 for i, w in enumerate(words):
     for c in w:
         (x, y, w, h) = cv2.boundingRect(c)
