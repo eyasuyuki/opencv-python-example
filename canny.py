@@ -1,13 +1,12 @@
 import datetime
 import itertools
-import math
 
 from imutils import contours
 import cv2
 import numpy as np
 from datetime import datetime
 
-DIGITS_LOOKUP = DIGITS_LOOKUP = {
+DIGITS_LOOKUP = {
     (1, 1, 1, 0, 1, 1, 1): 0,
     (0, 0, 1, 0, 0, 1, 0): 1,
     (1, 0, 1, 1, 1, 1, 0): 2,
@@ -92,11 +91,35 @@ def closing(img):
     return dilate, erode
 
 
-def adaptive_threshold(img):
+def read_digit(img):
     ret, th = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     cv2.imwrite(datetime.utcnow().strftime('th-%Y%m%d%H%M%S_%f.jpg'), th)
-    # TODO recognize
-
+    (rh, rw) = th.shape
+    aspect = rh / rw
+    print(f"rw={rw}, rh={rh}, aspect={aspect}")
+    if aspect > 2:
+        return "1"
+    # https://www.pyimagesearch.com/2017/02/13/recognizing-digits-with-opencv-and-python/
+    (dw, dh) = (int(rw * 0.25), int(rh * 0.15))
+    dhc = int(rh * 0.05)
+    segments = [
+        ((0, 0), (rw, dh)),  # top
+        ((0, 0), (dw, rh // 2)),  # top-left
+        ((rw - dw, 0), (rw, rh // 2)),  # top-right
+        ((0, (rh // 2) - dhc), (rw, (rh // 2) + dhc)),  # center
+        ((0, rh // 2), (dw, rh)),  # bottom-left
+        ((rw - dw, rh // 2), (rw, rh)),  # bottom-right
+        ((0, rh - dh), (rw, rh))  # bottom
+    ]
+    on = [0] * len(segments)
+    for (i, ((ax, ay), (bx, by))) in enumerate(segments):
+        seg = th[ay:by, ax:bx]
+        total = cv2.countNonZero(seg)
+        area = (bx - ax) * (by - ay)
+        if total / float(area) > 0.5:
+            on[i] = 1
+    digit = DIGITS_LOOKUP[tuple(on)]
+    return digit
 
 # load image
 image = cv2.imread("example.jpg")
@@ -138,6 +161,8 @@ cnts = cv2.findContours(erode.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
 
 sorted_cnts = contours.sort_contours(cnts, method="left-to-right")[0]
 
+# get pairs
+
 pairs = itertools.combinations(sorted_cnts, 2)
 
 # word group
@@ -165,18 +190,17 @@ for p in pairs:
 print(len(words))
 
 # print words
+textbox = image.copy()
+text = []
 for i, w in enumerate(words):
     for c in w:
         (x, y, w, h) = cv2.boundingRect(c)
-        print(f"i={i}, x={x}, y={y}, w={w}, h={h}")
-# textbox = image.copy()
-# (fx, fy, fw, fh) = cv2.boundingRect(sorted_cnts[0])
-# for c in sorted_cnts:
-#     (x, y, w, h) = cv2.boundingRect(c)
-#     rad = math.atan2(x - fx, y - fy)
-#     roi = contrast[y:y + h, x:x + w]  # clip numeric segment
-#     adaptive_threshold(roi)  # extract text segment
-#     print(f"{x}, {y}, {w}, {h}, {rad}")
-#     textbox = cv2.rectangle(textbox, (x, y), (x + w, y + h), (0, 255, 0), 2)
-#
-# cv2.imwrite("textbox.jpg", textbox)
+        roi = contrast[y:y + h, x:x + w]  # clip numeric segment
+        tx = read_digit(roi)  # extract text segment
+        if len(tx) > 0:
+            text.append(tx)
+        textbox = cv2.rectangle(textbox, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    text.append("\n")
+
+cv2.imwrite("textbox.jpg", textbox)
+print("".join(text), end="")
