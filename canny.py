@@ -37,13 +37,12 @@ def lut(img, min_table, max_table):
     lookup_table = np.arange(256, dtype="uint8")
 
     for i in range(0, len(lookup_table)):
-        if (i < min_table):
+        if i < min_table:
             lookup_table[i] = 0
-        elif (i >= min_table and i <= max_table):
+        elif min_table <= i <= max_table:
             n = 255 * (i - min_table) / diff_table
-            # print(f"{i}, {n}")
             lookup_table[i] = n
-        elif (i > max_table):
+        elif i > max_table:
             lookup_table[i] = 255
 
     contrast = cv2.LUT(img.copy(), lookup_table)
@@ -69,7 +68,7 @@ def filter_noise(img):
         (x, y, z, w) = cv2.boundingRect(c)
         a = cv2.contourArea(c)
         # print(f"{x}, {y}, {z}, {w}, {a}")
-        if (a >= 10):
+        if a >= 10:
             thCnts.append(c)
 
     background = np.zeros_like(img, np.uint8)
