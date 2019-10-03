@@ -17,3 +17,8 @@ python canny.py
 110
 79
 ```
+
+# Inspired from
+
+Recognizing digits with OpenCV and Python - PyImageSearch
+https://www.pyimagesearch.com/2017/02/13/recognizing-digits-with-opencv-and-python/
