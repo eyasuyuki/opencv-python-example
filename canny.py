@@ -7,16 +7,16 @@ import numpy as np
 from datetime import datetime
 
 DIGITS_LOOKUP = {
-    (1, 1, 1, 0, 1, 1, 1): 0,
-    (0, 0, 1, 0, 0, 1, 0): 1,
-    (1, 0, 1, 1, 1, 1, 0): 2,
-    (1, 0, 1, 1, 0, 1, 1): 3,
-    (0, 1, 1, 1, 0, 1, 0): 4,
-    (1, 1, 0, 1, 0, 1, 1): 5,
-    (1, 1, 0, 1, 1, 1, 1): 6,
-    (1, 0, 1, 0, 0, 1, 0): 7,
-    (1, 1, 1, 1, 1, 1, 1): 8,
-    (1, 1, 1, 1, 0, 1, 1): 9
+    (1, 1, 1, 0, 1, 1, 1): "0",
+    (0, 0, 1, 0, 0, 1, 0): "1",
+    (1, 0, 1, 1, 1, 1, 0): "2",
+    (1, 0, 1, 1, 0, 1, 1): "3",
+    (0, 1, 1, 1, 0, 1, 0): "4",
+    (1, 1, 0, 1, 0, 1, 1): "5",
+    (1, 1, 0, 1, 1, 1, 1): "6",
+    (1, 1, 1, 0, 0, 1, 0): "7",
+    (1, 1, 1, 1, 1, 1, 1): "8",
+    (1, 1, 1, 1, 0, 1, 1): "9"
 }
 
 
@@ -92,10 +92,8 @@ def closing(img):
 
 def read_digit(img):
     ret, th = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    cv2.imwrite(datetime.utcnow().strftime('th-%Y%m%d%H%M%S_%f.jpg'), th)
     (rh, rw) = th.shape
     aspect = rh / rw
-    print(f"rw={rw}, rh={rh}, aspect={aspect}")
     if aspect > 2:
         return "1"
     # https://www.pyimagesearch.com/2017/02/13/recognizing-digits-with-opencv-and-python/
@@ -113,9 +111,11 @@ def read_digit(img):
     on = [0] * len(segments)
     for (i, ((ax, ay), (bx, by))) in enumerate(segments):
         seg = th[ay:by, ax:bx]
+        cv2.imwrite(f"seg{i}.jpg", seg)
         total = cv2.countNonZero(seg)
         area = (bx - ax) * (by - ay)
-        if total / float(area) > 0.5:
+        print(f"i={i}, total={total}, area={area}, total/area={total/float(area)}")
+        if total / float(area) > 0.35:
             on[i] = 1
     digit = DIGITS_LOOKUP[tuple(on)]
     return digit
